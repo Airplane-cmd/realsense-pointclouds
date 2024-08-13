@@ -21,16 +21,18 @@ parser = argparse.ArgumentParser(description="Read recorded bag file and display
 parser.add_argument("-i", "--input", type=str, help="Path to the bag file")
 # Parse the command line arguments to an object
 args = parser.parse_args()
+path_provided = False
 # Safety if no parameter have been given
 if not args.input:
     print("No input paramater have been given.")
     print("For help type --help")
-    exit()
+else:
+    path_provided = True
 # Check if the given file have bag extension
-if os.path.splitext(args.input)[1] != ".bag":
-    print("The given file is not of correct file format.")
-    print("Only .bag files are accepted")
-    exit()
+if args.input:
+    if os.path.splitext(args.input)[1] != ".bag":
+        print("The given file is not of correct file format.")
+        print("Only .bag files are accepted")
 try:
     # Create pipeline
     pipeline = rs.pipeline()
@@ -39,8 +41,10 @@ try:
     config = rs.config()
 
     # Tell config that we will use a recorded device from file to be used by the pipeline through playback.
-    rs.config.enable_device_from_file(config, args.input)
-
+    if path_provided:
+        rs.config.enable_device_from_file(config, args.input)
+    else:
+        rs.config.enable_device_from_file(config, '../bag_files/recorded_data.bag')
     # Configure the pipeline to stream the depth stream
     # Change this parameters according to the recorded bag file resolution
     config.enable_stream(rs.stream.depth, rs.format.z16, 30)
